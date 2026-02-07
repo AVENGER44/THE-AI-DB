@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI HUB — Next Gen Tools</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        surface: { 50: '#18181b', 100: '#111113', 200: '#0c0c0e', 300: '#09090b' },
+                        accent: { DEFAULT: '#818cf8', light: '#a5b4fc', dim: '#4f46e5' }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="bg-surface-300 min-h-screen relative flex flex-col text-white">
+
+    <!-- Ambient Background Glow -->
+    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <div class="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-indigo-600/[0.07] rounded-full blur-[120px]"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-violet-600/[0.05] rounded-full blur-[100px]"></div>
+    </div>
+
+    <!-- Noise Overlay -->
+    <div class="noise-overlay"></div>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 nav-blur">
+        <div class="max-w-7xl mx-auto px-6 md:px-10 py-4 flex justify-between items-center">
+            <a href="#home" class="flex items-center gap-2.5 group">
+                <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-accent to-violet-500 flex items-center justify-center text-white text-xs font-bold tracking-tight brand-font shadow-lg shadow-accent/20">AI</div>
+                <span class="text-sm font-semibold tracking-wide brand-font text-white/90">HUB</span>
+            </a>
+            <div class="hidden md:flex items-center gap-1">
+                <a href="#home" class="nav-link px-4 py-2 rounded-full text-xs font-medium tracking-wide text-white/60 hover:text-white hover:bg-white/[0.06] transition-all duration-300">Home</a>
+                <a href="#directory" class="nav-link px-4 py-2 rounded-full text-xs font-medium tracking-wide text-white/60 hover:text-white hover:bg-white/[0.06] transition-all duration-300">Directory</a>
+            </div>
+            <div class="md:hidden text-xl cursor-pointer text-white/60 hover:text-white transition">☰</div>
+        </div>
+    </nav>
+
+    <!-- Scroll Indicator -->
+    <div class="fixed left-6 bottom-8 z-40 hidden md:flex flex-col items-center gap-3">
+        <div class="w-px h-12 bg-gradient-to-b from-transparent to-white/20"></div>
+        <span class="vertical-text text-[9px] tracking-[0.3em] text-white/25 font-medium">SCROLL</span>
+    </div>
+
+    <!-- ===== HERO ===== -->
+    <section id="home" class="min-h-screen flex flex-col justify-center items-center text-center px-4 relative pt-20">
+        <div class="relative z-10 flex flex-col items-center">
+            <!-- Badge -->
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] mb-8">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span class="text-[10px] font-medium tracking-widest text-white/50 uppercase">Curated AI Directory</span>
+            </div>
+
+            <h1 class="text-7xl md:text-[9rem] font-black tracking-tighter leading-[0.85] mb-4 brand-font">
+                <span class="bg-gradient-to-b from-white via-white/90 to-white/40 bg-clip-text text-transparent">AI</span>
+            </h1>
+            <h2 class="text-4xl md:text-6xl font-light tracking-[0.3em] mb-5 text-white/70 brand-font">HUB</h2>
+            <p class="text-white/30 text-xs md:text-sm tracking-[0.2em] uppercase mb-14 font-light">Next Generation Tools</p>
+
+            <!-- Search & Filters -->
+            <div class="w-full max-w-lg flex flex-col gap-5 z-10">
+                <!-- Search -->
+                <div class="relative group">
+                    <div class="absolute inset-0 rounded-2xl bg-gradient-to-r from-accent/20 to-violet-500/20 blur-xl opacity-0 group-focus-within:opacity-100 transition duration-500"></div>
+                    <div class="relative flex items-center bg-white/[0.04] border border-white/[0.08] rounded-2xl px-5 py-3.5 focus-within:border-accent/40 transition-all duration-300">
+                        <svg class="w-4 h-4 text-white/25 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        <input type="text" id="searchInput" placeholder="Search tools..."
+                            class="w-full bg-transparent text-white/90 placeholder-white/20 focus:outline-none text-sm font-light tracking-wide">
+                    </div>
+                </div>
+
+                <!-- Category Pills -->
+                <div class="flex justify-center gap-2 overflow-x-auto hide-scroll pb-1" id="filterContainer">
+                    <button onclick="filterTools('All')" class="category-btn active px-5 py-2 rounded-full text-[10px] font-semibold uppercase tracking-widest transition-all duration-300">All</button>
+                    <button onclick="filterTools('Text')" class="category-btn px-5 py-2 rounded-full text-[10px] font-semibold uppercase tracking-widest transition-all duration-300">Text</button>
+                    <button onclick="filterTools('Image')" class="category-btn px-5 py-2 rounded-full text-[10px] font-semibold uppercase tracking-widest transition-all duration-300">Image</button>
+                    <button onclick="filterTools('Code')" class="category-btn px-5 py-2 rounded-full text-[10px] font-semibold uppercase tracking-widest transition-all duration-300">Code</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gradient Fade to next section -->
+        <div class="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-b from-transparent to-surface-300"></div>
+    </section>
+
+    <!-- ===== DIRECTORY ===== -->
+    <section id="directory" class="flex-grow flex flex-col justify-start items-center py-20 px-4 md:px-10 relative z-10">
+        <div class="max-w-7xl w-full">
+            <div class="flex items-center gap-4 mb-12">
+                <div class="h-px flex-1 bg-gradient-to-r from-transparent to-white/[0.06]"></div>
+                <h2 class="text-sm font-semibold tracking-[0.3em] text-white/40 uppercase">Directory</h2>
+                <div class="h-px flex-1 bg-gradient-to-l from-transparent to-white/[0.06]"></div>
+            </div>
+
+            <!-- Grid -->
+            <div id="tools-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-16 min-h-[300px]">
+                <!-- JS injects cards -->
+            </div>
+
+            <p class="text-center text-white/20 text-[10px] tracking-[0.3em] uppercase font-medium">
+                Curated Artificial Intelligence Tools
+            </p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="relative z-10 py-8 border-t border-white/[0.04]">
+        <div class="max-w-7xl mx-auto px-6 flex items-center justify-center">
+            <span class="text-[10px] text-white/20 uppercase tracking-[0.3em] font-medium">AI HUB Directory</span>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+
+    <!-- ===== MODAL ===== -->
+    <div id="toolModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-md" onclick="closeToolModal()"></div>
+        <div class="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl border border-white/[0.08] shadow-2xl shadow-black/50 modal-animate modal-glass">
+            <button onclick="closeToolModal()" class="absolute top-5 right-6 w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.12] flex items-center justify-center text-white/50 hover:text-white transition-all duration-300 z-10 text-sm">&times;</button>
+
+            <div class="grid grid-cols-1 md:grid-cols-2">
+                <!-- Image -->
+                <div class="aspect-square md:aspect-auto md:min-h-[400px] overflow-hidden bg-surface-200 relative">
+                    <img id="modalImage" src="" class="w-full h-full object-cover opacity-80" alt="">
+                    <div class="absolute inset-0 bg-gradient-to-r from-transparent to-surface-200/50 hidden md:block"></div>
+                </div>
+
+                <!-- Content -->
+                <div class="p-8 md:p-10 flex flex-col justify-center">
+                    <span id="modalCategory" class="text-[10px] text-accent tracking-[0.2em] uppercase mb-3 font-semibold">Category</span>
+                    <h2 id="modalName" class="text-3xl md:text-4xl font-bold brand-font mb-5 leading-tight">Tool Name</h2>
+                    <p id="modalDescription" class="text-white/50 font-light leading-relaxed mb-8 text-sm">
+                        Description goes here...
+                    </p>
+
+                    <div id="modalLinks" class="flex gap-3 flex-wrap">
+                        <!-- Links injected -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
