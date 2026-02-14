@@ -2,6 +2,9 @@
 const gridContainer = document.getElementById('tools-grid');
 const searchInput = document.getElementById('searchInput');
 const filterContainer = document.getElementById('filterContainer');
+const loadingSpinner = document.getElementById('loadingSpinner');
+const errorMessage = document.getElementById('errorMessage');
+const retryButton = document.getElementById('retryButton');
 
 let activeCategory = 'All';
 
@@ -141,101 +144,154 @@ const aiTools = [
 
 // ===== RENDER =====
 function renderTools(toolsData) {
-    gridContainer.innerHTML = '';
+    // Show loading spinner during rendering
+    loadingSpinner.classList.remove('hidden');
+    
+    // Simulate loading delay for better UX
+    setTimeout(() => {
+        gridContainer.innerHTML = '';
+        
+        if (toolsData.length === 0) {
+            const emptyMessage = aiTools.length === 0
+                ? "Database is currently empty."
+                : "No matching tools found.";
 
-    if (toolsData.length === 0) {
-        const emptyMessage = aiTools.length === 0
-            ? "Database is currently empty."
-            : "No matching tools found.";
+            gridContainer.innerHTML = `
+                <div class="col-span-1 sm:col-span-2 lg:col-span-3 text-center py-20 card-animate">
+                    <div class="inline-flex flex-col items-center gap-3">
+                        <svg class="w-10 h-10 text-white/10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        <p class="text-white/25 uppercase tracking-[0.2em] text-xs font-medium">${emptyMessage}</p>
+                    </div>
+                </div>`;
+            
+            // Hide loading spinner
+            loadingSpinner.classList.add('hidden');
+            return;
+        }
 
-        gridContainer.innerHTML = `
-            <div class="col-span-1 sm:col-span-2 lg:col-span-3 text-center py-20 card-animate">
-                <div class="inline-flex flex-col items-center gap-3">
-                    <svg class="w-10 h-10 text-white/10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                    </svg>
-                    <p class="text-white/25 uppercase tracking-[0.2em] text-xs font-medium">${emptyMessage}</p>
-                </div>
-            </div>`;
-        return;
-    }
+        toolsData.forEach((tool, index) => {
+            const toolIndex = aiTools.findIndex(t => t.name === tool.name);
+            const delay = index * 0.06;
 
-    toolsData.forEach((tool, index) => {
-        const toolIndex = aiTools.findIndex(t => t.name === tool.name);
-        const delay = index * 0.06;
-
-        const cardHtml = `
-            <div onclick="openToolModal(${toolIndex})" class="tool-card card-animate" style="animation-delay: ${delay}s">
-                <div class="card-image-wrap">
-                    <img src="${tool.image}" alt="${tool.name}" loading="lazy">
-                    <span class="card-badge">${tool.category}</span>
-                    <div class="card-overlay">
-                        <h3 class="text-xl font-bold brand-font mb-1.5">${tool.name}</h3>
-                        <p class="text-[11px] text-white/40 font-light tracking-wide">Click to explore →</p>
+            const cardHtml = `
+                <div onclick="openToolModal(${toolIndex})" class="tool-card card-animate" style="animation-delay: ${delay}s">
+                    <div class="card-image-wrap">
+                        <img src="${tool.image}" alt="${tool.name}" loading="lazy">
+                        <span class="card-badge">${tool.category}</span>
+                        <div class="card-overlay">
+                            <h3 class="text-xl font-bold brand-font mb-1.5">${tool.name}</h3>
+                            <p class="text-[11px] text-white/40 font-light tracking-wide">Click to explore →</p>
+                        </div>
                     </div>
                 </div>
-            </div>
-        `;
-        gridContainer.innerHTML += cardHtml;
-    });
+            `;
+            gridContainer.innerHTML += cardHtml;
+        });
+        
+        // Hide loading spinner after rendering
+        loadingSpinner.classList.add('hidden');
+    }, 100); // Small delay to ensure spinner is visible
 }
 
 // ===== MODAL =====
 function openToolModal(index) {
     const tool = aiTools[index];
-    if (!tool) return;
-
-    const modal = document.getElementById('toolModal');
-    document.getElementById('modalImage').src = tool.image;
-    document.getElementById('modalName').textContent = tool.name;
-    document.getElementById('modalCategory').textContent = tool.category;
-    document.getElementById('modalDescription').textContent = tool.description;
-
-    const modalLinks = document.getElementById('modalLinks');
-    modalLinks.innerHTML = '';
-    if (tool.links) {
-        tool.links.forEach((link, i) => {
-            const a = document.createElement('a');
-            a.href = link.url;
-            a.target = "_blank";
-            a.className = i === 0 ? "modal-link modal-link-primary" : "modal-link modal-link-secondary";
-            a.textContent = link.label;
-            modalLinks.appendChild(a);
-        });
+    if (!tool) {
+        // Show error if tool data is missing
+        console.error("Tool data not found for index:", index);
+        return;
     }
+    
+    try {
+        const modal = document.getElementById('toolModal');
+        document.getElementById('modalImage').src = tool.image;
+        document.getElementById('modalName').textContent = tool.name;
+        document.getElementById('modalCategory').textContent = tool.category;
+        document.getElementById('modalDescription').textContent = tool.description;
 
-    modal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
+        const modalLinks = document.getElementById('modalLinks');
+        modalLinks.innerHTML = '';
+        if (tool.links) {
+            tool.links.forEach((link, i) => {
+                const a = document.createElement('a');
+                a.href = link.url;
+                a.target = "_blank";
+                a.rel = "noopener noreferrer"; // Security best practice
+                a.className = i === 0 ? "modal-link modal-link-primary" : "modal-link modal-link-secondary";
+                a.textContent = link.label;
+                modalLinks.appendChild(a);
+            });
+        }
+
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    } catch (error) {
+        console.error("Error opening modal:", error);
+        // Show error message to user
+        alert("Error loading tool details. Please try again.");
+    }
 }
 
 function closeToolModal() {
-    document.getElementById('toolModal').classList.add('hidden');
-    document.body.style.overflow = '';
+    try {
+        document.getElementById('toolModal').classList.add('hidden');
+        document.body.style.overflow = '';
+    } catch (error) {
+        console.error("Error closing modal:", error);
+    }
 }
 
 // ===== FILTER & SEARCH =====
 function updateDisplay() {
-    const query = searchInput.value.toLowerCase();
-    const filtered = aiTools.filter(tool => {
-        const matchesCategory = activeCategory === 'All' || tool.category === activeCategory;
-        const matchesSearch = tool.name.toLowerCase().includes(query) || tool.description.toLowerCase().includes(query);
-        return matchesCategory && matchesSearch;
-    });
-    renderTools(filtered);
+    try {
+        const query = searchInput.value.toLowerCase();
+        const filtered = aiTools.filter(tool => {
+            const matchesCategory = activeCategory === 'All' || tool.category === activeCategory;
+            const matchesSearch = tool.name.toLowerCase().includes(query) || tool.description.toLowerCase().includes(query);
+            return matchesCategory && matchesSearch;
+        });
+        renderTools(filtered);
+    } catch (error) {
+        console.error("Error updating display:", error);
+        showError();
+    }
 }
 
 function filterTools(category) {
-    activeCategory = category;
-    const buttons = document.querySelectorAll('.category-btn');
-    buttons.forEach(btn => {
-        if (btn.innerText.trim().toUpperCase() === category.toUpperCase()) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
-        }
-    });
-    updateDisplay();
+    try {
+        activeCategory = category;
+        const buttons = document.querySelectorAll('.category-btn');
+        buttons.forEach(btn => {
+            if (btn.innerText.trim().toUpperCase() === category.toUpperCase()) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+        updateDisplay();
+    } catch (error) {
+        console.error("Error filtering tools:", error);
+        showError();
+    }
 }
+
+// Error handling functions
+function showError() {
+    loadingSpinner.classList.add('hidden');
+    errorMessage.classList.remove('hidden');
+}
+
+function hideError() {
+    errorMessage.classList.add('hidden');
+}
+
+// Retry button functionality
+retryButton.addEventListener('click', () => {
+    hideError();
+    updateDisplay();
+});
 
 // ===== EVENT LISTENERS =====
 searchInput.addEventListener('input', updateDisplay);
@@ -254,5 +310,10 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// Initial Render
-renderTools(aiTools);
+// Initial Render with error handling
+try {
+    renderTools(aiTools);
+} catch (error) {
+    console.error("Error during initial render:", error);
+    showError();
+}
